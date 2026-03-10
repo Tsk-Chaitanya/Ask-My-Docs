@@ -1,0 +1,44 @@
+BM25: The Classic Ranking Function
+
+BM25 (Best Match 25) is a probabilistic ranking function used in information retrieval to score
+the relevance of documents to a search query. Despite being developed in the 1990s, BM25 remains
+widely used because it is simple, fast, and surprisingly effective — especially for queries
+containing specific technical terms, acronyms, or proper nouns that embedding models sometimes
+struggle with.
+
+How BM25 Works
+
+BM25 scores a document based on three factors:
+
+1. Term Frequency (TF): How often the query term appears in the document. BM25 applies a
+   saturation function so that additional occurrences of a term have diminishing returns —
+   a document mentioning "transformer" 50 times isn't 50x more relevant than one mentioning
+   it once.
+
+2. Inverse Document Frequency (IDF): Terms that appear in fewer documents are more informative.
+   The word "the" appears in nearly every document and thus has low IDF, while "backpropagation"
+   appears in few documents and has high IDF.
+
+3. Document Length Normalization: Longer documents naturally contain more term occurrences, so
+   BM25 normalizes for document length to prevent bias toward longer documents.
+
+The BM25 formula combines these factors with two tunable parameters: k1 (controls term frequency
+saturation, typically 1.2-2.0) and b (controls length normalization, typically 0.75).
+
+BM25 vs Dense Retrieval
+
+BM25 excels at exact term matching. If a user searches for "BERT fine-tuning learning rate",
+BM25 will find documents containing exactly those terms. Dense retrieval using embeddings excels
+at semantic matching — it can find documents about "adjusting training hyperparameters for
+transformer models" even though none of the original query terms appear.
+
+The current best practice in production systems is hybrid retrieval: running both BM25 and dense
+retrieval in parallel, then fusing the results using techniques like Reciprocal Rank Fusion (RRF).
+This captures both exact keyword matches and semantic similarities.
+
+Reciprocal Rank Fusion
+
+RRF is a simple but effective method for combining multiple ranked lists. For each document, it
+computes a fused score by summing 1/(k + rank) across all retrievers, where k is a constant
+(typically 60) that prevents documents ranked first from dominating too heavily. RRF requires no
+score calibration between retrievers, which is its main advantage over linear score combination.

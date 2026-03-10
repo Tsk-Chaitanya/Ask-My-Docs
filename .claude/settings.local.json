@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"from src.generation.generator import AnswerGenerator; g = AnswerGenerator\\(\\); print\\(''Client connected:'', g.client is not None\\)\")",
+      "Bash(chmod u+w \"c:/Users/saikr/Documents/Ask-My-Docs/tests/test_phase1.py\")"
+    ]
+  }
+}

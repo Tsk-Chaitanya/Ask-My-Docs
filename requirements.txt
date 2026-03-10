@@ -1,0 +1,15 @@
+# ── Phase 1: Fundamentals ──
+tiktoken>=0.5.2           # Token counting for accurate chunking
+pypdf>=3.17.0             # PDF text extraction
+chromadb>=0.4.22          # Vector store with built-in embeddings
+anthropic>=0.39.0         # Claude API for answer generation
+pyyaml>=6.0.1             # Versioned prompt configuration
+
+# ── Phase 2: Production Retrieval ──
+rank-bm25>=0.2.2              # BM25 sparse retrieval
+sentence-transformers>=2.2.2  # Cross-encoder reranker
+fastapi>=0.104.0              # API server
+uvicorn>=0.24.0               # ASGI server
+
+# ── Dev ──
+pytest>=7.4.0
