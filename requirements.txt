@@ -13,3 +13,4 @@ uvicorn>=0.24.0               # ASGI server
 
 # ── Dev ──
 pytest>=7.4.0
+python-dotenv>=1.0.0
