@@ -334,4 +334,4 @@ MIT
 
 ## Acknowledgments
 
-Built by [Sai Krishna Mandru](https://github.com/YOUR_USERNAME) as a hands-on deep dive into production RAG systems. Each phase was designed to understand a specific layer of the stack, from document processing fundamentals to hybrid retrieval to conversational AI.
+Built by [Sai Krishna Chaitanya Thommandru](https://github.com/Tsk-Chaitanya) as a hands-on deep dive into production RAG systems. Each phase was designed to understand a specific layer of the stack, from document processing fundamentals to hybrid retrieval to conversational AI.
