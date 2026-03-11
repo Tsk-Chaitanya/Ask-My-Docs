@@ -1,0 +1,100 @@
+[
+  {
+    "id": "gd_001",
+    "question": "What is BM25 and what does it stand for?",
+    "expected_answer_contains": ["Best Match 25", "ranking function", "information retrieval"],
+    "source_document": "bm25.txt",
+    "category": "factual_recall",
+    "difficulty": "easy"
+  },
+  {
+    "id": "gd_002",
+    "question": "What are the two tunable parameters in BM25 and what do they control?",
+    "expected_answer_contains": ["k1", "b", "term frequency", "length normalization"],
+    "source_document": "bm25.txt",
+    "category": "factual_recall",
+    "difficulty": "medium"
+  },
+  {
+    "id": "gd_003",
+    "question": "What is Reciprocal Rank Fusion and why is it preferred over score averaging?",
+    "expected_answer_contains": ["rank", "1/(k + rank)", "score calibration", "60"],
+    "source_document": "bm25.txt",
+    "category": "factual_recall",
+    "difficulty": "medium"
+  },
+  {
+    "id": "gd_004",
+    "question": "What is the difference between a bi-encoder and a cross-encoder?",
+    "expected_answer_contains": ["independently", "jointly", "speed", "accuracy"],
+    "source_document": "embeddings.md",
+    "category": "comparison",
+    "difficulty": "medium"
+  },
+  {
+    "id": "gd_005",
+    "question": "Name three vector databases and describe what ChromaDB is used for.",
+    "expected_answer_contains": ["ChromaDB", "Weaviate", "Pinecone", "HNSW"],
+    "source_document": "embeddings.md",
+    "category": "factual_recall",
+    "difficulty": "easy"
+  },
+  {
+    "id": "gd_006",
+    "question": "What are the three stages of a typical RAG system?",
+    "expected_answer_contains": ["Indexing", "Retrieval", "Generation"],
+    "source_document": "rag_survey.md",
+    "category": "factual_recall",
+    "difficulty": "easy"
+  },
+  {
+    "id": "gd_007",
+    "question": "Why is token-based chunking preferred over character-based chunking?",
+    "expected_answer_contains": ["token", "character", "context window", "500"],
+    "source_document": "rag_survey.md",
+    "category": "factual_recall",
+    "difficulty": "medium"
+  },
+  {
+    "id": "gd_008",
+    "question": "How does BM25 differ from dense retrieval using embeddings?",
+    "expected_answer_contains": ["exact", "semantic", "keyword", "meaning"],
+    "source_document": "bm25.txt",
+    "category": "comparison",
+    "difficulty": "medium"
+  },
+  {
+    "id": "gd_009",
+    "question": "What is cosine similarity and when is it used?",
+    "expected_answer_contains": ["angle", "vectors", "magnitude", "text"],
+    "source_document": "embeddings.md",
+    "category": "factual_recall",
+    "difficulty": "easy"
+  },
+  {
+    "id": "gd_010",
+    "question": "What does faithfulness mean in the context of RAG evaluation?",
+    "expected_answer_contains": ["faithfulness", "chunks", "supported", "generated"],
+    "source_document": "rag_survey.md",
+    "category": "factual_recall",
+    "difficulty": "medium"
+  },
+  {
+    "id": "gd_011",
+    "question": "What is the capital of France?",
+    "expected_answer_contains": ["don't have enough information"],
+    "source_document": null,
+    "category": "out_of_scope",
+    "difficulty": "easy",
+    "should_decline": true
+  },
+  {
+    "id": "gd_012",
+    "question": "Explain quantum computing in detail.",
+    "expected_answer_contains": ["don't have enough information"],
+    "source_document": null,
+    "category": "out_of_scope",
+    "difficulty": "easy",
+    "should_decline": true
+  }
+]

@@ -82,7 +82,7 @@ Most RAG tutorials stop at "embed chunks → cosine search → send to LLM." Tha
 | API Server | FastAPI + Uvicorn |
 | Evaluation | Custom metrics (faithfulness, citation accuracy, retrieval recall) |
 | Testing | pytest |
-| CI | GitHub Actions with eval gating |
+| CI | GitHub Actions (`eval_gate.yml`) |
 
 ---
 
@@ -95,7 +95,8 @@ ask-my-docs/
 ├── data/
 │   ├── documents/                # Source documents (PDF, MD, TXT)
 │   └── eval/
-│       └── golden_dataset.json   # Curated evaluation Q&A pairs
+│       ├── golden_dataset.json   # Curated evaluation Q&A pairs
+│       └── test_questionnaire.md # Manual testing guide (23 questions)
 ├── src/
 │   ├── ingestion/
 │   │   ├── loader.py             # Multi-format document loading
@@ -111,14 +112,19 @@ ask-my-docs/
 │   │   └── generator.py          # Citation-enforced answer generation
 │   ├── evaluation/
 │   │   ├── golden_dataset.py     # Eval dataset loader & validator
-│   │   ├── metrics.py            # Faithfulness, relevance, citation metrics
+│   │   ├── metrics.py            # Coverage, citation & decline metrics
 │   │   └── run_eval.py           # Eval runner with CI gating
 │   └── api/
 │       ├── server.py             # FastAPI endpoints
 │       └── ui.html               # Web interface
-├── tests/                        # Unit & integration tests
-├── ci/
-│   └── eval_gate.yml             # GitHub Actions CI pipeline
+├── tests/
+│   ├── test_phase1.py            # 17 tests — loaders, chunker, vector, generator
+│   ├── test_phase2.py            # 12 tests — BM25, hybrid, reranker
+│   ├── test_phase3.py            # 12 tests — session memory, contextual queries
+│   └── test_phase4.py            # 14 tests — golden dataset, metrics, aggregation
+├── .github/
+│   └── workflows/
+│       └── eval_gate.yml         # GitHub Actions CI pipeline
 ├── requirements.txt
 └── README.md
 ```
