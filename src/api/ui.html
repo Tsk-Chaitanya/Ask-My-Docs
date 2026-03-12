@@ -204,6 +204,63 @@
     margin-top: -0.2rem;
   }
   .copy-btn:hover { background: #f0ece7; color: #2d2a26; }
+
+  /* ── API Key indicator dot ─────────────────────── */
+  .key-dot {
+    display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; margin-left: 4px; vertical-align: middle;
+    background: #d1cbc4;
+  }
+  .key-dot.active { background: #0d9488; }
+
+  /* ── API Key Modal ─────────────────────────────── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px;
+    padding: 1.5rem; width: 340px; max-width: 90vw;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal h3 {
+    font-size: 0.95rem; font-weight: 600; color: #2d2a26;
+    margin-bottom: 0.35rem;
+  }
+  .modal p {
+    font-size: 0.78rem; color: #8a8078; line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+  .modal p a { color: #0d9488; text-decoration: none; }
+  .modal p a:hover { text-decoration: underline; }
+  .modal input[type="password"] {
+    width: 100%; border: 1px solid #e8e4df; border-radius: 8px;
+    padding: 0.6rem 0.8rem; font-size: 0.85rem; outline: none;
+    font-family: monospace; transition: border-color 0.15s;
+    color: #2d2a26;
+  }
+  .modal input[type="password"]:focus { border-color: #0d9488; }
+  .modal-actions {
+    display: flex; gap: 0.5rem; margin-top: 0.75rem; justify-content: flex-end;
+  }
+  .modal-actions button {
+    border-radius: 8px; padding: 0.45rem 0.9rem;
+    font-size: 0.82rem; cursor: pointer; font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-cancel { background: none; border: 1px solid #e8e4df; color: #8a8078; }
+  .btn-cancel:hover { background: #f0ece7; }
+  .btn-save { background: #0d9488; border: none; color: #fff; }
+  .btn-save:hover { background: #0f766e; }
+  .btn-clear { background: none; border: 1px solid #e8e4df; color: #b45309; margin-right: auto; }
+  .btn-clear:hover { background: #fef3c7; }
 </style>
 </head>
 <body>
@@ -215,7 +272,28 @@
       <span class="badge" id="stats-badge">loading...</span>
     </div>
     <div class="header-actions">
+      <button onclick="openKeyModal()" title="Set your Anthropic API key">
+        🔑 API Key<span class="key-dot" id="key-dot"></span>
+      </button>
       <button onclick="clearChat()" title="Start new conversation">New Chat</button>
+    </div>
+  </div>
+
+  <!-- API Key Modal -->
+  <div class="modal-overlay" id="key-modal" onclick="if(event.target===this) closeKeyModal()">
+    <div class="modal">
+      <h3>Anthropic API Key</h3>
+      <p>
+        Your key is stored only in your browser (localStorage) and sent directly
+        to this server for each request — never saved server-side.<br><br>
+        Get a key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.
+      </p>
+      <input type="password" id="key-input" placeholder="sk-ant-..." autocomplete="off">
+      <div class="modal-actions">
+        <button class="btn-clear" onclick="clearApiKey()">Remove Key</button>
+        <button class="btn-cancel" onclick="closeKeyModal()">Cancel</button>
+        <button class="btn-save" onclick="saveApiKey()">Save</button>
+      </div>
     </div>
   </div>
 
@@ -240,6 +318,54 @@
 <script>
   let sessionId = crypto.randomUUID();
   let isLoading = false;
+
+  // ── API Key ────────────────────────────────────
+  const KEY_STORAGE = 'amd_api_key';
+
+  function getApiKey() {
+    return localStorage.getItem(KEY_STORAGE) || '';
+  }
+
+  function updateKeyDot() {
+    const dot = document.getElementById('key-dot');
+    dot.classList.toggle('active', !!getApiKey());
+  }
+
+  function openKeyModal() {
+    document.getElementById('key-input').value = getApiKey();
+    document.getElementById('key-modal').classList.add('open');
+    setTimeout(() => document.getElementById('key-input').focus(), 80);
+  }
+
+  function closeKeyModal() {
+    document.getElementById('key-modal').classList.remove('open');
+  }
+
+  function saveApiKey() {
+    const key = document.getElementById('key-input').value.trim();
+    if (key) {
+      localStorage.setItem(KEY_STORAGE, key);
+    } else {
+      localStorage.removeItem(KEY_STORAGE);
+    }
+    updateKeyDot();
+    closeKeyModal();
+  }
+
+  function clearApiKey() {
+    localStorage.removeItem(KEY_STORAGE);
+    document.getElementById('key-input').value = '';
+    updateKeyDot();
+    closeKeyModal();
+  }
+
+  // Close modal on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeKeyModal();
+  });
+
+  // Init dot on load
+  updateKeyDot();
 
   // ── Load Stats ─────────────────────────────────
   fetch('/api/stats')
@@ -279,7 +405,7 @@
       const resp = await fetch('/api/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, top_k: 5, session_id: sessionId }),
+        body: JSON.stringify({ question, top_k: 5, session_id: sessionId, api_key: getApiKey() }),
       });
       const data = await resp.json();
 

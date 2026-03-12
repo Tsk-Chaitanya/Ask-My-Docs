@@ -84,6 +84,7 @@ class QueryRequest(BaseModel):
     question: str
     top_k: int = 5
     session_id: str = ""
+    api_key: str = ""   # optional per-request key supplied by the UI
 
 
 class ChunkInfo(BaseModel):
@@ -214,7 +215,13 @@ async def query(req: QueryRequest):
     top_chunks = reranker.rerank(req.question, candidates, top_k=req.top_k)
 
     # Step 3: Generate cited answer
-    answer = generator.generate(req.question, top_chunks)
+    # Use the per-request API key if provided, otherwise fall back to generator default
+    if req.api_key:
+        from src.generation.generator import AnswerGenerator as _AG
+        request_generator = _AG(api_key=req.api_key)
+        answer = request_generator.generate(req.question, top_chunks)
+    else:
+        answer = generator.generate(req.question, top_chunks)
 
     # Save turn to session memory
     sessions.add_turn(session_id, req.question, answer.answer)
@@ -260,5 +267,7 @@ async def clear_session(req: SessionClearRequest):
 # ── Run ──────────────────────────────────────────────────────
 
 if __name__ == "__main__":
+    import os
     import uvicorn
-    uvicorn.run("src.api.server:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("src.api.server:app", host="0.0.0.0", port=port, reload=False)

@@ -228,6 +228,34 @@ The system works with any domain — legal contracts, medical papers, internal w
 
 ---
 
+## Deployment
+
+The project ships with a `render.yaml` blueprint for one-click deployment to [Render](https://render.com).
+
+### Deploy to Render
+
+1. Push this repository to GitHub (already done).
+2. Go to [dashboard.render.com](https://dashboard.render.com) → **New** → **Blueprint**.
+3. Connect your GitHub repo and select `render.yaml`.
+4. In the service's **Environment** tab, add your secret:
+   - Key: `ANTHROPIC_API_KEY`
+   - Value: your key from [console.anthropic.com](https://console.anthropic.com)
+5. Click **Deploy**. Render will install dependencies and start the server.
+
+Once live, the app is accessible at the URL Render assigns (e.g. `https://ask-my-docs.onrender.com`).
+
+### Per-User API Key (UI)
+
+Users can supply their **own** Anthropic API key directly in the interface — no server-side key required. Click the **🔑 API Key** button in the top-right corner, paste a key, and save. The key is stored in browser `localStorage` and sent with every request. The server uses it instead of its own environment variable, so each user's queries are billed to their own account.
+
+### Notes for Self-Hosting
+
+- The server reads `PORT` from the environment automatically, so it works on any platform that injects a port (Render, Railway, Fly.io, etc.).
+- ChromaDB uses an in-memory store by default. For persistent storage across deploys, mount a persistent disk and point `CHROMA_PATH` to it.
+- The free tier of Render spins down after inactivity — the first request after a cold start may take 20–30 seconds while the reranker model loads.
+
+---
+
 ## License
 
 MIT

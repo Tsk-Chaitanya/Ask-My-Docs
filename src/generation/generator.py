@@ -44,9 +44,11 @@ class AnswerGenerator:
         prompt_manager: PromptManager | None = None,
         model: str = "claude-sonnet-4-20250514",
         max_tokens: int = 1024,
+        api_key: str = "",
     ):
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        self.client = anthropic.Anthropic(api_key=api_key) if api_key else None
+        # Use provided key, then fall back to environment variable
+        resolved_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
+        self.client = anthropic.Anthropic(api_key=resolved_key) if resolved_key else None
         self.prompts = prompt_manager or PromptManager()
         self.model = model
         self.max_tokens = max_tokens
