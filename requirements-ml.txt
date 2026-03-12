@@ -1,0 +1,6 @@
+# Optional ML packages for cross-encoder reranking (local dev only)
+# Install with: pip install -r requirements-ml.txt
+# Not required for deployment — reranker gracefully skips if unavailable
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.0.0
+sentence-transformers>=2.2.2

@@ -15,8 +15,9 @@ MODEL:
 NOTE:
   sentence-transformers and torch are imported lazily so the module
   can be imported even when those packages are not installed (e.g.
-  in lightweight test environments). The actual model is loaded at
-  Reranker construction time.
+  in cloud deployments without ML deps). When unavailable, rerank()
+  returns candidates unchanged so the app still works without reranking.
+  Install requirements-ml.txt locally to enable the full reranker.
 """
 
 from __future__ import annotations
@@ -25,16 +26,32 @@ from src.retrieval.vector import RetrievalResult
 
 
 class Reranker:
-    """Cross-encoder reranker using sentence-transformers."""
+    """Cross-encoder reranker using sentence-transformers.
+
+    Gracefully degrades to a no-op pass-through when sentence-transformers
+    or torch are not installed, so the app runs in deployment without ML deps.
+    """
 
     def __init__(
         self,
         model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
         relevance_threshold: float = 0.0,
     ):
-        from sentence_transformers import CrossEncoder
-        self.model = CrossEncoder(model_name, max_length=512)
         self.relevance_threshold = relevance_threshold
+        self.model = None
+        self._available = False
+
+        try:
+            from sentence_transformers import CrossEncoder
+            self.model = CrossEncoder(model_name, max_length=512)
+            self._available = True
+        except (ImportError, Exception):
+            # sentence-transformers / torch not installed — reranker disabled
+            pass
+
+    @property
+    def available(self) -> bool:
+        return self._available
 
     def rerank(
         self,
@@ -45,6 +62,9 @@ class Reranker:
         """
         Re-score candidates with the cross-encoder and return the top_k.
 
+        Falls back to returning the first top_k candidates unchanged when
+        the reranker model is not available.
+
         Args:
             query: The user's question.
             candidates: First-stage retrieval results to rerank.
@@ -52,6 +72,10 @@ class Reranker:
         """
         if not candidates:
             return []
+
+        # Graceful degradation: no ML deps installed
+        if not self._available:
+            return candidates[:top_k]
 
         # Build (query, document) pairs for the cross-encoder
         pairs = [(query, c.content) for c in candidates]

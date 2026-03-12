@@ -1,20 +1,11 @@
-# ── Phase 1: Fundamentals ──
-tiktoken>=0.5.2           # Token counting for accurate chunking
-pypdf>=3.17.0             # PDF text extraction
-chromadb>=0.4.22          # Vector store with built-in embeddings
-anthropic>=0.39.0         # Claude API for answer generation
-pyyaml>=6.0.1             # Versioned prompt configuration
-
-# ── Phase 2: Production Retrieval ──
-rank-bm25>=0.2.2          # BM25 sparse retrieval
-fastapi>=0.104.0          # API server
-uvicorn>=0.24.0           # ASGI server
-
-# ── Reranker (CPU-only torch to keep image small) ──
---extra-index-url https://download.pytorch.org/whl/cpu
-torch>=2.0.0
-sentence-transformers>=2.2.2
-
-# ── Dev ──
-pytest>=7.4.0
+# Core — used in production deployment
+tiktoken>=0.5.2
+pypdf>=3.17.0
+chromadb>=0.4.22
+anthropic>=0.39.0
+pyyaml>=6.0.1
+rank-bm25>=0.2.2
+fastapi>=0.104.0
+uvicorn>=0.24.0
 python-dotenv>=1.0.0
+pytest>=7.4.0
