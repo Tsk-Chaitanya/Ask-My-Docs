@@ -1,5 +1,7 @@
 # Ask My Docs
 
+**Live demo:** [web-production-1983.up.railway.app](https://web-production-1983.up.railway.app)
+
 A production-quality Retrieval Augmented Generation (RAG) system that lets you ask natural language questions about your documents and get accurate, cited answers powered by Claude.
 
 Built to understand every layer of the RAG stack — from document chunking to hybrid retrieval to cross-encoder reranking — with no shortcuts or black-box abstractions.
