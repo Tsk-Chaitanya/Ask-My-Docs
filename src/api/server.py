@@ -17,8 +17,8 @@ import uuid
 from collections import OrderedDict
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 from src.ingestion.loader import load_directory
@@ -195,55 +195,64 @@ async def serve_ui():
 @app.post("/api/query", response_model=QueryResponse)
 async def query(req: QueryRequest):
     """Full Phase 3 pipeline: context-aware hybrid retrieval -> reranking -> generation."""
-    pipeline = get_pipeline()
+    try:
+        pipeline = get_pipeline()
 
-    hybrid: HybridRetriever = pipeline["hybrid"]
-    reranker: Reranker = pipeline["reranker"]
-    generator: AnswerGenerator = pipeline["generator"]
+        hybrid: HybridRetriever = pipeline["hybrid"]
+        reranker: Reranker = pipeline["reranker"]
+        generator: AnswerGenerator = pipeline["generator"]
 
-    # Get conversation history for context
-    session_id = req.session_id or str(uuid.uuid4())
-    history = sessions.get_history(session_id)
+        # Get conversation history for context
+        session_id = req.session_id or str(uuid.uuid4())
+        history = sessions.get_history(session_id)
 
-    # Build a context-aware query for retrieval
-    retrieval_query = _build_contextual_query(req.question, history)
+        # Build a context-aware query for retrieval
+        retrieval_query = _build_contextual_query(req.question, history)
 
-    # Step 1: Hybrid retrieval (BM25 + vector, fused with RRF)
-    candidates = hybrid.retrieve(retrieval_query, top_k=req.top_k * 2, fetch_k=20)
+        # Step 1: Hybrid retrieval (BM25 + vector, fused with RRF)
+        candidates = hybrid.retrieve(retrieval_query, top_k=req.top_k * 2, fetch_k=20)
 
-    # Step 2: Cross-encoder reranking
-    top_chunks = reranker.rerank(req.question, candidates, top_k=req.top_k)
+        # Step 2: Cross-encoder reranking
+        top_chunks = reranker.rerank(req.question, candidates, top_k=req.top_k)
 
-    # Step 3: Generate cited answer
-    # Use the per-request API key if provided, otherwise fall back to generator default
-    if req.api_key:
-        from src.generation.generator import AnswerGenerator as _AG
-        request_generator = _AG(api_key=req.api_key)
-        answer = request_generator.generate(req.question, top_chunks)
-    else:
-        answer = generator.generate(req.question, top_chunks)
+        # Step 3: Generate cited answer
+        # Use the per-request API key if provided, otherwise fall back to generator default
+        if req.api_key:
+            from src.generation.generator import AnswerGenerator as _AG
+            request_generator = _AG(api_key=req.api_key)
+            answer = request_generator.generate(req.question, top_chunks)
+        else:
+            answer = generator.generate(req.question, top_chunks)
 
-    # Save turn to session memory
-    sessions.add_turn(session_id, req.question, answer.answer)
+        # Save turn to session memory
+        sessions.add_turn(session_id, req.question, answer.answer)
 
-    return QueryResponse(
-        answer=answer.answer,
-        citations=answer.citations,
-        chunks_used=[
-            ChunkInfo(
-                chunk_id=c["chunk_id"],
-                source=c["source"],
-                score=c["score"],
-                content=next(
-                    (ch.content for ch in top_chunks if ch.chunk_id == c["chunk_id"]),
-                    "",
-                ),
-            )
-            for c in answer.chunks_used
-        ],
-        declined=answer.declined,
-        prompt_version=answer.prompt_version,
-    )
+        return QueryResponse(
+            answer=answer.answer,
+            citations=answer.citations,
+            chunks_used=[
+                ChunkInfo(
+                    chunk_id=c["chunk_id"],
+                    source=c["source"],
+                    score=c["score"],
+                    content=next(
+                        (ch.content for ch in top_chunks if ch.chunk_id == c["chunk_id"]),
+                        "",
+                    ),
+                )
+                for c in answer.chunks_used
+            ],
+            declined=answer.declined,
+            prompt_version=answer.prompt_version,
+        )
+    except Exception as exc:
+        import traceback
+        print(f"[ERROR] /api/query failed: {exc}\n{traceback.format_exc()}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(exc), "answer": f"Server error: {exc}", "citations": [],
+                     "chunks_used": [], "declined": True, "prompt_version": ""},
+        )
 
 
 @app.get("/api/stats", response_model=StatsResponse)

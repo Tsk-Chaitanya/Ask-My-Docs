@@ -407,13 +407,26 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, top_k: 5, session_id: sessionId, api_key: getApiKey() }),
       });
-      const data = await resp.json();
+
+      let data;
+      const text = await resp.text();
+      try {
+        data = JSON.parse(text);
+      } catch (_) {
+        loadingEl.remove();
+        appendMessage('assistant', `Server error (status ${resp.status}): ${text.slice(0, 200)}`, true);
+        return;
+      }
 
       loadingEl.remove();
-      appendAnswer(data);
+      if (!resp.ok && data.error) {
+        appendMessage('assistant', `Error: ${data.error}`, true);
+      } else {
+        appendAnswer(data);
+      }
     } catch (err) {
       loadingEl.remove();
-      appendMessage('assistant', 'Something went wrong. Please try again.', true);
+      appendMessage('assistant', `Network error: ${err.message}`, true);
     } finally {
       btn.disabled = false;
       isLoading = false;
