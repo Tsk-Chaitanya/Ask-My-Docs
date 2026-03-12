@@ -230,19 +230,20 @@ The system works with any domain — legal contracts, medical papers, internal w
 
 ## Deployment
 
-The project ships with a `render.yaml` blueprint for one-click deployment to [Render](https://render.com).
+The project ships with a `railway.toml` config for free deployment to [Railway](https://railway.app) — no credit card required, $5 free credit/month.
 
-### Deploy to Render
+### Deploy to Railway (Free)
 
 1. Push this repository to GitHub (already done).
-2. Go to [dashboard.render.com](https://dashboard.render.com) → **New** → **Blueprint**.
-3. Connect your GitHub repo and select `render.yaml`.
-4. In the service's **Environment** tab, add your secret:
+2. Go to [railway.app](https://railway.app) and sign in with GitHub.
+3. Click **New Project** → **Deploy from GitHub repo** → select `Ask-My-Docs`.
+4. Railway auto-detects Python and uses `railway.toml` for the start command.
+5. Open the service → **Variables** tab → add:
    - Key: `ANTHROPIC_API_KEY`
    - Value: your key from [console.anthropic.com](https://console.anthropic.com)
-5. Click **Deploy**. Render will install dependencies and start the server.
+6. Click **Deploy**. Railway builds and starts the server automatically.
 
-Once live, the app is accessible at the URL Render assigns (e.g. `https://ask-my-docs.onrender.com`).
+Once live, go to **Settings → Networking → Generate Domain** to get a public URL (e.g. `https://ask-my-docs.up.railway.app`).
 
 ### Per-User API Key (UI)
 
@@ -250,9 +251,9 @@ Users can supply their **own** Anthropic API key directly in the interface — n
 
 ### Notes for Self-Hosting
 
-- The server reads `PORT` from the environment automatically, so it works on any platform that injects a port (Render, Railway, Fly.io, etc.).
-- ChromaDB uses an in-memory store by default. For persistent storage across deploys, mount a persistent disk and point `CHROMA_PATH` to it.
-- The free tier of Render spins down after inactivity — the first request after a cold start may take 20–30 seconds while the reranker model loads.
+- The server reads `PORT` from the environment automatically, so it works on any platform that injects a port (Railway, Fly.io, etc.).
+- ChromaDB uses an in-memory store by default. For persistent storage across deploys, mount a persistent volume and point `CHROMA_PATH` to it.
+- Cold starts after inactivity may take 20–30 seconds while the reranker model loads — this is normal on free tiers.
 
 ---
 
